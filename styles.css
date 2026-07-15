@@ -873,6 +873,14 @@ a {
   color: #9a3d34;
 }
 
+.event-status {
+  margin: 0;
+  padding: 24px 28px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
 .notice-aside {
   position: sticky;
   top: 110px;

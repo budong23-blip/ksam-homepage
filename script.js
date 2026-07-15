@@ -20,6 +20,7 @@ window.addEventListener("scroll", updateHeader, { passive: true });
 updateHeader();
 
 const noticeList = document.querySelector("[data-notice-list]");
+const homeNoticeList = document.querySelector("[data-home-notice-list]");
 
 const addNoticeText = (container, tagName, text, className) => {
   if (!text) return;
@@ -29,15 +30,18 @@ const addNoticeText = (container, tagName, text, className) => {
   container.append(element);
 };
 
-const renderNotices = (notices) => {
-  if (!noticeList) return;
-
-  const visibleNotices = notices
+const getVisibleNotices = (notices) =>
+  notices
     .filter((notice) => notice.published !== false)
     .sort((a, b) => {
       if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
       return String(b.date).localeCompare(String(a.date));
     });
+
+const renderNotices = (notices) => {
+  if (!noticeList) return;
+
+  const visibleNotices = getVisibleNotices(notices);
 
   noticeList.replaceChildren();
 
@@ -76,20 +80,67 @@ const renderNotices = (notices) => {
   });
 };
 
-if (noticeList) {
+const renderHomeNotices = (notices) => {
+  if (!homeNoticeList) return;
+
+  const visibleNotices = getVisibleNotices(notices).slice(0, 3);
+  homeNoticeList.replaceChildren();
+
+  if (visibleNotices.length === 0) {
+    addNoticeText(
+      homeNoticeList,
+      "p",
+      "暂无公告。 / 등록된 공지사항이 없습니다.",
+      "event-status",
+    );
+    return;
+  }
+
+  visibleNotices.forEach((notice) => {
+    const link = document.createElement("a");
+    link.className = "event-item";
+    link.href = "./notices.html";
+
+    const time = document.createElement("time");
+    time.dateTime = notice.date;
+    time.textContent = String(notice.date).replaceAll("-", ".");
+
+    addNoticeText(link, "strong", notice.title_zh);
+    addNoticeText(link, "span", notice.title_ko);
+    link.prepend(time);
+    homeNoticeList.append(link);
+  });
+};
+
+if (noticeList || homeNoticeList) {
   fetch("./data/notices.json")
     .then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
     })
-    .then((data) => renderNotices(Array.isArray(data.notices) ? data.notices : []))
+    .then((data) => {
+      const notices = Array.isArray(data.notices) ? data.notices : [];
+      renderNotices(notices);
+      renderHomeNotices(notices);
+    })
     .catch(() => {
-      noticeList.replaceChildren();
-      addNoticeText(
-        noticeList,
-        "p",
-        "公告暂时无法显示。 / 공지사항을 불러오지 못했습니다.",
-        "notice-status notice-error",
-      );
+      if (noticeList) {
+        noticeList.replaceChildren();
+        addNoticeText(
+          noticeList,
+          "p",
+          "公告暂时无法显示。 / 공지사항을 불러오지 못했습니다.",
+          "notice-status notice-error",
+        );
+      }
+      if (homeNoticeList) {
+        homeNoticeList.replaceChildren();
+        addNoticeText(
+          homeNoticeList,
+          "p",
+          "公告暂时无法显示。 / 공지사항을 불러오지 못했습니다.",
+          "event-status notice-error",
+        );
+      }
     });
 }
