@@ -39,6 +39,17 @@ const getVisibleNotices = (notices) =>
       return String(b.date).localeCompare(String(a.date));
     });
 
+const getNoticeTitle = (notice) =>
+  String(notice.title || notice.title_zh || notice.title_ko || "公告 / 공지사항");
+
+const getNoticeDetailUrl = (notice) => {
+  const detailParams = new URLSearchParams({
+    date: String(notice.date),
+    title: getNoticeTitle(notice),
+  });
+  return `./notice-detail.html?${detailParams.toString()}`;
+};
+
 const renderNotices = (notices) => {
   if (!noticeList) return;
 
@@ -71,10 +82,23 @@ const renderNotices = (notices) => {
       notice.pinned ? `Pinned · ${notice.type || "Notice"}` : notice.type || "Notice",
       "notice-type",
     );
-    addNoticeText(content, "h2", notice.title_zh);
-    addNoticeText(content, "p", notice.body_zh);
-    addNoticeText(content, "h3", notice.title_ko, "ko-title notice-ko-title");
-    addNoticeText(content, "p", notice.body_ko, "ko-summary");
+    const heading = document.createElement("h2");
+    const headingLink = document.createElement("a");
+    headingLink.className = "notice-card-link";
+    headingLink.href = getNoticeDetailUrl(notice);
+    headingLink.textContent = getNoticeTitle(notice);
+    heading.append(headingLink);
+    content.append(heading);
+
+    if (!notice.title && notice.title_ko) {
+      addNoticeText(content, "h3", notice.title_ko, "ko-title notice-ko-title");
+    }
+
+    const readMore = document.createElement("a");
+    readMore.className = "notice-read-more";
+    readMore.href = getNoticeDetailUrl(notice);
+    readMore.textContent = "查看详情 / 자세히 보기";
+    content.append(readMore);
 
     article.append(time, content);
     noticeList.append(article);
@@ -100,18 +124,14 @@ const renderHomeNotices = (notices) => {
   visibleNotices.forEach((notice) => {
     const link = document.createElement("a");
     link.className = "event-item";
-    const detailParams = new URLSearchParams({
-      date: String(notice.date),
-      title: String(notice.title_zh || ""),
-    });
-    link.href = `./notice-detail.html?${detailParams.toString()}`;
+    link.href = getNoticeDetailUrl(notice);
 
     const time = document.createElement("time");
     time.dateTime = notice.date;
     time.textContent = String(notice.date).replaceAll("-", ".");
 
-    addNoticeText(link, "strong", notice.title_zh);
-    addNoticeText(link, "span", notice.title_ko);
+    addNoticeText(link, "strong", getNoticeTitle(notice));
+    if (!notice.title) addNoticeText(link, "span", notice.title_ko);
     link.prepend(time);
     homeNoticeList.append(link);
   });
@@ -128,7 +148,7 @@ const renderNoticeDetail = (notices) => {
     visibleNotices.find(
       (notice) =>
         String(notice.date) === requestedDate &&
-        String(notice.title_zh || "") === requestedTitle,
+        getNoticeTitle(notice) === requestedTitle,
     ) || visibleNotices.find((notice) => String(notice.date) === requestedDate);
 
   noticeDetail.replaceChildren();
@@ -143,7 +163,7 @@ const renderNoticeDetail = (notices) => {
     return;
   }
 
-  document.title = `${selectedNotice.title_zh} | KSAM`;
+  document.title = `${getNoticeTitle(selectedNotice)} | KSAM`;
 
   const meta = document.createElement("div");
   meta.className = "notice-detail-meta";
@@ -159,20 +179,41 @@ const renderNoticeDetail = (notices) => {
   );
 
   noticeDetail.append(meta);
-  addNoticeText(noticeDetail, "h1", selectedNotice.title_zh);
-  addNoticeText(noticeDetail, "p", selectedNotice.body_zh, "notice-detail-body");
-  addNoticeText(
-    noticeDetail,
-    "h2",
-    selectedNotice.title_ko,
-    "notice-detail-ko-title",
-  );
-  addNoticeText(
-    noticeDetail,
-    "p",
-    selectedNotice.body_ko,
-    "notice-detail-body ko-summary",
-  );
+  addNoticeText(noticeDetail, "h1", getNoticeTitle(selectedNotice));
+
+  if (selectedNotice.body) {
+    const richContent = document.createElement("div");
+    richContent.className = "notice-rich-content";
+    if (window.marked?.parse && window.DOMPurify?.sanitize) {
+      const renderedBody = window.marked.parse(String(selectedNotice.body), {
+        breaks: true,
+        gfm: true,
+      });
+      richContent.innerHTML = window.DOMPurify.sanitize(renderedBody);
+    } else {
+      richContent.textContent = selectedNotice.body;
+    }
+    noticeDetail.append(richContent);
+  } else {
+    addNoticeText(
+      noticeDetail,
+      "p",
+      selectedNotice.body_zh,
+      "notice-detail-body",
+    );
+    addNoticeText(
+      noticeDetail,
+      "h2",
+      selectedNotice.title_ko,
+      "notice-detail-ko-title",
+    );
+    addNoticeText(
+      noticeDetail,
+      "p",
+      selectedNotice.body_ko,
+      "notice-detail-body ko-summary",
+    );
+  }
 };
 
 if (noticeList || homeNoticeList || noticeDetail) {
