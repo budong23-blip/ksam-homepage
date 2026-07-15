@@ -5,10 +5,6 @@ backend:
 locale: ko
 media_folder: assets/uploads
 public_folder: /assets/uploads
-media_library:
-  config:
-    max_file_size: 8388608
-
 collections:
   - name: site_content
     label: 홈페이지 관리
