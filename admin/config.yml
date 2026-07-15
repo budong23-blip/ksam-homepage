@@ -1,0 +1,30 @@
+backend:
+  name: git-gateway
+  branch: main
+
+locale: ko
+media_folder: assets/uploads
+public_folder: /assets/uploads
+
+collections:
+  - name: site_content
+    label: 홈페이지 관리
+    files:
+      - name: notices
+        label: 최신 공지사항
+        file: data/notices.json
+        format: json
+        fields:
+          - label: 공지 목록
+            name: notices
+            widget: list
+            summary: "{{fields.date}} · {{fields.title_ko}}"
+            fields:
+              - { label: 게시일, name: date, widget: datetime, date_format: YYYY-MM-DD, time_format: false, format: YYYY-MM-DD }
+              - { label: 분류, name: type, widget: select, options: [Notice, Conference, Recruitment, Exchange, Education] }
+              - { label: 상단 고정, name: pinned, widget: boolean, default: false }
+              - { label: 홈페이지에 공개, name: published, widget: boolean, default: true }
+              - { label: 중국어 제목, name: title_zh, widget: string }
+              - { label: 중국어 내용, name: body_zh, widget: text }
+              - { label: 한국어 제목, name: title_ko, widget: string }
+              - { label: 한국어 내용, name: body_ko, widget: text }
