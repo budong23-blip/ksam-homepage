@@ -9,6 +9,7 @@
       content="KSAM 韩国美容医学学术交流会 / 한국미용의학학술교류회 - Korea-China academic exchange, medical training, and aesthetic medicine seminars."
     />
     <link rel="stylesheet" href="./styles.css" />
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body>
     <header class="site-header" data-header>
@@ -224,5 +225,16 @@
     </footer>
 
     <script src="./script.js"></script>
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", (user) => {
+          if (!user) {
+            window.netlifyIdentity.on("login", () => {
+              window.location.href = "/admin/";
+            });
+          }
+        });
+      }
+    </script>
   </body>
 </html>
