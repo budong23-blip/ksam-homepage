@@ -9,6 +9,16 @@
       "body_zh": "2026 KSAM韩国美容创新大会日程发布。大会日程、详细分会和参加咨询将通过KSAM秘书处依次公布。",
       "title_ko": "2026 KSAM 한국 미용 혁신 컨퍼런스 일정 발표",
       "body_ko": "대회 일정, 세부 세션, 참가 문의는 KSAM 사무국을 통해 순차 안내됩니다."
+    },
+    {
+      "pinned": true,
+      "published": true,
+      "date": "2026-07-15",
+      "type": "Conference",
+      "title_zh": "test",
+      "body_zh": "test",
+      "title_ko": "테스트",
+      "body_ko": "테스트"
     }
   ]
 }
