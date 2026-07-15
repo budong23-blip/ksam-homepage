@@ -21,6 +21,7 @@ updateHeader();
 
 const noticeList = document.querySelector("[data-notice-list]");
 const homeNoticeList = document.querySelector("[data-home-notice-list]");
+const noticeDetail = document.querySelector("[data-notice-detail]");
 
 const addNoticeText = (container, tagName, text, className) => {
   if (!text) return;
@@ -99,7 +100,11 @@ const renderHomeNotices = (notices) => {
   visibleNotices.forEach((notice) => {
     const link = document.createElement("a");
     link.className = "event-item";
-    link.href = "./notices.html";
+    const detailParams = new URLSearchParams({
+      date: String(notice.date),
+      title: String(notice.title_zh || ""),
+    });
+    link.href = `./notice-detail.html?${detailParams.toString()}`;
 
     const time = document.createElement("time");
     time.dateTime = notice.date;
@@ -112,7 +117,65 @@ const renderHomeNotices = (notices) => {
   });
 };
 
-if (noticeList || homeNoticeList) {
+const renderNoticeDetail = (notices) => {
+  if (!noticeDetail) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const requestedDate = params.get("date");
+  const requestedTitle = params.get("title");
+  const visibleNotices = getVisibleNotices(notices);
+  const selectedNotice =
+    visibleNotices.find(
+      (notice) =>
+        String(notice.date) === requestedDate &&
+        String(notice.title_zh || "") === requestedTitle,
+    ) || visibleNotices.find((notice) => String(notice.date) === requestedDate);
+
+  noticeDetail.replaceChildren();
+
+  if (!selectedNotice) {
+    addNoticeText(
+      noticeDetail,
+      "p",
+      "未找到该公告。 / 해당 공지사항을 찾을 수 없습니다.",
+      "notice-status notice-error",
+    );
+    return;
+  }
+
+  document.title = `${selectedNotice.title_zh} | KSAM`;
+
+  const meta = document.createElement("div");
+  meta.className = "notice-detail-meta";
+  const time = document.createElement("time");
+  time.dateTime = selectedNotice.date;
+  time.textContent = String(selectedNotice.date).replaceAll("-", ".");
+  meta.append(time);
+  addNoticeText(
+    meta,
+    "span",
+    selectedNotice.type || "Notice",
+    "notice-type",
+  );
+
+  noticeDetail.append(meta);
+  addNoticeText(noticeDetail, "h1", selectedNotice.title_zh);
+  addNoticeText(noticeDetail, "p", selectedNotice.body_zh, "notice-detail-body");
+  addNoticeText(
+    noticeDetail,
+    "h2",
+    selectedNotice.title_ko,
+    "notice-detail-ko-title",
+  );
+  addNoticeText(
+    noticeDetail,
+    "p",
+    selectedNotice.body_ko,
+    "notice-detail-body ko-summary",
+  );
+};
+
+if (noticeList || homeNoticeList || noticeDetail) {
   fetch("./data/notices.json")
     .then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -122,6 +185,7 @@ if (noticeList || homeNoticeList) {
       const notices = Array.isArray(data.notices) ? data.notices : [];
       renderNotices(notices);
       renderHomeNotices(notices);
+      renderNoticeDetail(notices);
     })
     .catch(() => {
       if (noticeList) {
@@ -140,6 +204,15 @@ if (noticeList || homeNoticeList) {
           "p",
           "公告暂时无法显示。 / 공지사항을 불러오지 못했습니다.",
           "event-status notice-error",
+        );
+      }
+      if (noticeDetail) {
+        noticeDetail.replaceChildren();
+        addNoticeText(
+          noticeDetail,
+          "p",
+          "公告暂时无法显示。 / 공지사항을 불러오지 못했습니다.",
+          "notice-status notice-error",
         );
       }
     });
