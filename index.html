@@ -51,7 +51,7 @@
             한국과 중국의 미용의학 전문가, 교육 과정, 학술회의, 산업 협력을 연결하는 전문 교류 플랫폼입니다.
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="./seminars.html">学术活动 / 학술활동</a>
+            <a class="button primary" href="./notices.html">最新公告 / 최신 공지사항</a>
             <a class="button secondary" href="./index.html#contact">联系咨询 / 문의하기</a>
           </div>
           <dl class="hero-stats" aria-label="KSAM focus areas">
@@ -202,6 +202,47 @@
         </div>
       </section>
     </main>
+
+    <dialog
+      class="conference-popup"
+      data-conference-popup
+      aria-labelledby="conference-popup-title"
+    >
+      <button
+        class="conference-popup-close"
+        type="button"
+        aria-label="关闭弹窗 / 팝업 닫기"
+        data-popup-close
+      >
+        ×
+      </button>
+      <div
+        class="conference-popup-visual"
+        role="img"
+        aria-label="KSAM international academic conference"
+      ></div>
+      <div class="conference-popup-content">
+        <p class="eyebrow">Academic Conference / 학술회 안내</p>
+        <h2 id="conference-popup-title">KSAM国际学术交流会</h2>
+        <p class="conference-popup-ko-title">KSAM 국제 학술교류회</p>
+        <p>
+          学术会议日程、讲师及参加方式将在最新公告中依次发布。
+        </p>
+        <p class="ko-summary">
+          학술회 일정, 연자 및 참가 방법은 최신 공지사항을 통해 순차적으로 안내됩니다.
+        </p>
+        <div class="conference-popup-meta">
+          <span>TEST NOTICE / 테스트 안내</span>
+          <strong>详细日程待公布 / 세부 일정 추후 공지</strong>
+        </div>
+        <div class="conference-popup-actions">
+          <a class="button dark" href="./seminars.html">学术活动 / 학술활동 보기</a>
+          <button type="button" data-popup-hide-today>
+            今日不再显示 / 오늘 하루 보지 않기
+          </button>
+        </div>
+      </div>
+    </dialog>
 
     <footer class="site-footer">
       <strong>KSAM 韩国美容医学学术交流会</strong>

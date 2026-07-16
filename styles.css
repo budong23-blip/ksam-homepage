@@ -271,6 +271,129 @@ a {
   border-color: var(--navy);
 }
 
+.conference-popup:not([open]) {
+  display: none;
+}
+
+.conference-popup[open] {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  width: min(920px, calc(100% - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--white);
+  box-shadow: 0 28px 90px rgba(4, 12, 21, 0.42);
+}
+
+.conference-popup::backdrop {
+  background: rgba(4, 12, 21, 0.74);
+  backdrop-filter: blur(4px);
+}
+
+.conference-popup-visual {
+  min-height: 470px;
+  background:
+    linear-gradient(rgba(11, 26, 42, 0.22), rgba(11, 26, 42, 0.54)),
+    url("./assets/ksam-hero.png") center / cover;
+}
+
+.conference-popup-content {
+  align-self: center;
+  min-width: 0;
+  padding: 48px;
+}
+
+.conference-popup-content h2 {
+  margin: 8px 0 2px;
+  color: var(--navy);
+  font-size: 38px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.conference-popup-ko-title {
+  margin: 0 0 24px;
+  color: var(--gold);
+  font-size: 21px;
+  font-weight: 800;
+  word-break: keep-all;
+}
+
+.conference-popup-content > p:not(.eyebrow, .conference-popup-ko-title) {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.conference-popup-meta {
+  display: grid;
+  gap: 3px;
+  margin-top: 26px;
+  padding: 16px 0;
+  border-block: 1px solid var(--line);
+}
+
+.conference-popup-meta span {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.conference-popup-meta strong {
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.conference-popup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.conference-popup-actions > button {
+  padding: 8px 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.conference-popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--navy);
+  background: rgba(255, 255, 255, 0.94);
+  font: inherit;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.conference-popup-close:hover,
+.conference-popup-close:focus-visible {
+  color: var(--white);
+  background: var(--navy);
+}
+
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1272,5 +1395,31 @@ body.has-image-viewer {
   .notice-card {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .conference-popup[open] {
+    grid-template-columns: 1fr;
+    width: min(100% - 24px, 520px);
+  }
+
+  .conference-popup-visual {
+    min-height: 180px;
+  }
+
+  .conference-popup-content {
+    padding: 28px 22px;
+  }
+
+  .conference-popup-content h2 {
+    padding-right: 34px;
+    font-size: 30px;
+  }
+
+  .conference-popup-actions {
+    align-items: stretch;
+  }
+
+  .conference-popup-actions .button {
+    width: 100%;
   }
 }

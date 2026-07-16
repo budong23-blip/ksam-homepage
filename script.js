@@ -19,6 +19,49 @@ const updateHeader = () => {
 window.addEventListener("scroll", updateHeader, { passive: true });
 updateHeader();
 
+const conferencePopup = document.querySelector("[data-conference-popup]");
+
+if (conferencePopup instanceof HTMLDialogElement) {
+  const popupDateKey = (() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  })();
+  const popupStorageKey = "ksam-conference-popup-hidden-date";
+  let hiddenDate = "";
+
+  try {
+    hiddenDate = window.localStorage.getItem(popupStorageKey) || "";
+  } catch {
+    hiddenDate = "";
+  }
+
+  if (hiddenDate !== popupDateKey) {
+    window.requestAnimationFrame(() => conferencePopup.showModal());
+  }
+
+  conferencePopup
+    .querySelector("[data-popup-close]")
+    ?.addEventListener("click", () => conferencePopup.close());
+
+  conferencePopup
+    .querySelector("[data-popup-hide-today]")
+    ?.addEventListener("click", () => {
+      try {
+        window.localStorage.setItem(popupStorageKey, popupDateKey);
+      } catch {
+        // The popup can still be closed when storage is unavailable.
+      }
+      conferencePopup.close();
+    });
+
+  conferencePopup.addEventListener("click", (event) => {
+    if (event.target === conferencePopup) conferencePopup.close();
+  });
+}
+
 const noticeList = document.querySelector("[data-notice-list]");
 const homeNoticeList = document.querySelector("[data-home-notice-list]");
 const noticeDetail = document.querySelector("[data-notice-detail]");
