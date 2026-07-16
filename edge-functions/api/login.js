@@ -30,7 +30,3 @@ export async function onRequestPost({ request, env }) {
     { "set-cookie": sessionCookie(token) },
   );
 }
-
-export function onRequest() {
-  return json({ error: "Method not allowed" }, 405, { allow: "POST" });
-}

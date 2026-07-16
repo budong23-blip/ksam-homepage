@@ -38,7 +38,3 @@ export async function onRequestPost({ request, env }) {
     expiresAt: upload.expiresAt,
   });
 }
-
-export function onRequest() {
-  return json({ error: "Method not allowed" }, 405, { allow: "POST" });
-}

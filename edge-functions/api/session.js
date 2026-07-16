@@ -9,7 +9,3 @@ export async function onRequestGet({ request, env }) {
     username: session?.username || null,
   });
 }
-
-export function onRequest() {
-  return json({ error: "Method not allowed" }, 405, { allow: "GET" });
-}

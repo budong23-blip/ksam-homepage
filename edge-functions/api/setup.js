@@ -33,7 +33,3 @@ export async function onRequestPost({ request, env }) {
     return json({ error: error.message || "관리자 계정을 등록하지 못했습니다." }, conflict ? 409 : 400);
   }
 }
-
-export function onRequest() {
-  return json({ error: "Method not allowed" }, 405, { allow: "POST" });
-}

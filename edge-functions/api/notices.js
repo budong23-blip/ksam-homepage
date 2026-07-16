@@ -58,7 +58,3 @@ export async function onRequestPut({ request, env }) {
   await store.setJSON(NOTICES_KEY, data);
   return json({ saved: true, ...data });
 }
-
-export function onRequest() {
-  return json({ error: "Method not allowed" }, 405, { allow: "GET, PUT" });
-}

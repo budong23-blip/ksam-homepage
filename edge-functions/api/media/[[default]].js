@@ -26,7 +26,3 @@ export async function onRequestGet({ request }) {
     },
   });
 }
-
-export function onRequest() {
-  return new Response("Method not allowed", { status: 405, headers: { allow: "GET" } });
-}
