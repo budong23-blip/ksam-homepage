@@ -1,16 +1,3 @@
 {
-  "notices": [
-    {
-      "body_ko": "피부 수명의 연장 + 자연스러운 아름다움\nasdfasdfsa\nasdfa\nsdafasf\nasdfasf",
-      "body": "이미지를 누르면 확대 및 축소 가능합니다. \n\n![](/assets/uploads/weixin-image_20260716112621_817_188.jpg)",
-      "title_ko": "한국 의료미용 학술교류회 제4회 정기 학술회의 ",
-      "body_zh": "皮肤\ntest\netasdfasdf\nasdfasdf\nasdfasfd",
-      "published": true,
-      "date": "2026-07-15",
-      "title_zh": "韩国医疗美容",
-      "title": "한국 의료미용 학술교류회 제4회 정기 학술회의",
-      "pinned": true,
-      "type": "Conference"
-    }
-  ]
+  "notices": []
 }
