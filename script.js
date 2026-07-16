@@ -482,16 +482,22 @@ if (noticeList || homeNoticeList || noticeDetail) {
   let noticesLoaded = false;
 
   const loadNotices = () => {
-    const requestUrl = new URL("./data/notices.json", window.location.href);
-    requestUrl.searchParams.set("updated", Date.now().toString());
+    const apiUrl = new URL("./api/notices", window.location.href);
+    const fallbackUrl = new URL("./data/notices.json", window.location.href);
+    apiUrl.searchParams.set("updated", Date.now().toString());
+    fallbackUrl.searchParams.set("updated", Date.now().toString());
 
-    return fetch(requestUrl, { cache: "no-store" })
+    const fetchJson = (url) =>
+      fetch(url, { cache: "no-store" })
+        .then((response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response.json();
+        });
+
+    return fetchJson(apiUrl)
+      .catch(() => fetchJson(fallbackUrl))
       .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
-      .then((data) => {
-        const notices = Array.isArray(data.notices) ? data.notices : [];
+        const notices = Array.isArray(response.notices) ? response.notices : [];
         renderNotices(notices);
         renderHomeNotices(notices);
         renderNoticeDetail(notices);

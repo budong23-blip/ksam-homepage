@@ -1,0 +1,9 @@
+{
+  "name": "ksam-homepage",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@edgeone/pages-blob": "latest"
+  }
+}
