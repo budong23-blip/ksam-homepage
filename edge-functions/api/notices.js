@@ -24,7 +24,7 @@ const getNotices = async () => {
   const current = await store.get(NOTICES_KEY, { type: "json", consistency: "strong" });
   if (current && Array.isArray(current.notices)) return current;
 
-  await store.setJSON(NOTICES_KEY, DEFAULT_NOTICES, { onlyIfNew: true });
+  await store.setJSON(NOTICES_KEY, DEFAULT_NOTICES);
   return DEFAULT_NOTICES;
 };
 

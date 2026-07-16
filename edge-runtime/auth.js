@@ -128,7 +128,7 @@ export const createAdminConfig = async (username, password) => {
     createdAt: new Date().toISOString(),
   };
   const store = getStore({ name: AUTH_STORE, consistency: "strong" });
-  await store.setJSON(AUTH_KEY, config, { onlyIfNew: true });
+  await store.setJSON(AUTH_KEY, config);
 
   const saved = await getAdminConfig({});
   if (
