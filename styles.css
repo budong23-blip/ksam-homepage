@@ -733,8 +733,9 @@ a {
   align-items: center;
   justify-content: center;
   padding: 38px 20px;
-  color: rgba(255, 255, 255, 0.68);
-  background: #0d141b;
+  color: var(--muted);
+  background: #eef2f4;
+  border-top: 1px solid var(--line);
   font-size: 13px;
 }
 
