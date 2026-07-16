@@ -92,7 +92,10 @@ const renderList = () => {
 };
 
 const bodyToHtml = (body) => {
-  const source = String(body || "");
+  const source = String(body || "").replaceAll(
+    'src="/api/media/',
+    'src="/api/media-file/',
+  );
   if (!source) return "";
   if (/<[a-z][\s\S]*>/iu.test(source)) return window.DOMPurify.sanitize(source);
   return window.DOMPurify.sanitize(window.marked.parse(source, { breaks: true, gfm: true }));
@@ -302,8 +305,8 @@ imageInput.addEventListener("change", async () => {
   const file = imageInput.files?.[0];
   imageInput.value = "";
   if (!file) return;
-  if (file.size > 10 * 1024 * 1024) {
-    setStatus("사진은 10MB 이하만 가능합니다.", "error");
+  if (file.size > 5 * 1024 * 1024) {
+    setStatus("사진은 5MB 이하만 가능합니다.", "error");
     return;
   }
 

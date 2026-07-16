@@ -446,7 +446,11 @@ const renderNoticeDetail = (notices) => {
     const richContent = document.createElement("div");
     richContent.className = "notice-rich-content";
     if (window.marked?.parse && window.DOMPurify?.sanitize) {
-      const renderedBody = window.marked.parse(String(selectedNotice.body), {
+      const normalizedBody = String(selectedNotice.body).replaceAll(
+        'src="/api/media/',
+        'src="/api/media-file/',
+      );
+      const renderedBody = window.marked.parse(normalizedBody, {
         breaks: true,
         gfm: true,
       });

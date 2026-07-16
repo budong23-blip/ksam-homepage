@@ -34,7 +34,7 @@ export async function onRequestPost({ request, env }) {
   return json({
     uploadUrl: upload.url,
     key: upload.key,
-    publicUrl: `/api/media/${upload.key}`,
+    publicUrl: `/api/media-file/${upload.key}`,
     expiresAt: upload.expiresAt,
   });
 }
