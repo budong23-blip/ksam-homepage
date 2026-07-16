@@ -50,6 +50,67 @@ const getNoticeDetailUrl = (notice) => {
   return `./notice-detail.html?${detailParams.toString()}`;
 };
 
+const setupNoticeImageViewer = (container) => {
+  const images = container.querySelectorAll("img");
+  if (images.length === 0) return;
+
+  const viewer = document.createElement("div");
+  viewer.className = "image-viewer";
+  viewer.hidden = true;
+  viewer.setAttribute("role", "dialog");
+  viewer.setAttribute("aria-modal", "true");
+  viewer.setAttribute("aria-label", "Image viewer");
+
+  const viewerImage = document.createElement("img");
+  const closeButton = document.createElement("button");
+  closeButton.className = "image-viewer-close";
+  closeButton.type = "button";
+  closeButton.textContent = "×";
+  closeButton.setAttribute("aria-label", "Close image viewer");
+  viewer.append(viewerImage, closeButton);
+  document.body.append(viewer);
+
+  let activeImage = null;
+
+  const closeViewer = () => {
+    viewer.hidden = true;
+    viewerImage.removeAttribute("src");
+    document.body.classList.remove("has-image-viewer");
+    activeImage?.focus();
+    activeImage = null;
+  };
+
+  const openViewer = (image) => {
+    activeImage = image;
+    viewerImage.src = image.currentSrc || image.src;
+    viewerImage.alt = image.alt || "";
+    viewer.hidden = false;
+    document.body.classList.add("has-image-viewer");
+    closeButton.focus();
+  };
+
+  images.forEach((image) => {
+    image.tabIndex = 0;
+    image.setAttribute("role", "button");
+    image.setAttribute("aria-label", `${image.alt || "Image"} - enlarge`);
+    image.addEventListener("click", () => openViewer(image));
+    image.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openViewer(image);
+      }
+    });
+  });
+
+  closeButton.addEventListener("click", closeViewer);
+  viewer.addEventListener("click", (event) => {
+    if (event.target === viewer) closeViewer();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !viewer.hidden) closeViewer();
+  });
+};
+
 const renderNotices = (notices) => {
   if (!noticeList) return;
 
@@ -194,6 +255,7 @@ const renderNoticeDetail = (notices) => {
       richContent.textContent = selectedNotice.body;
     }
     noticeDetail.append(richContent);
+    setupNoticeImageViewer(richContent);
   } else {
     addNoticeText(
       noticeDetail,

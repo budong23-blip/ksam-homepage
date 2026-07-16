@@ -990,8 +990,12 @@ a {
 .notice-rich-content img {
   display: block;
   max-width: 100%;
+  max-height: min(68vh, 720px);
+  width: auto;
   height: auto;
   margin: 28px auto;
+  object-fit: contain;
+  cursor: zoom-in;
 }
 
 .notice-rich-content a {
@@ -1002,6 +1006,59 @@ a {
   padding: 16px 20px;
   border-left: 4px solid var(--gold);
   background: var(--paper);
+}
+
+body.has-image-viewer {
+  overflow: hidden;
+}
+
+.image-viewer[hidden] {
+  display: none;
+}
+
+.image-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 64px 24px 24px;
+  background: rgba(4, 12, 21, 0.94);
+  cursor: zoom-out;
+}
+
+.image-viewer > img {
+  display: block;
+  max-width: 96vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  cursor: default;
+}
+
+.image-viewer-close {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: rgba(4, 12, 21, 0.72);
+  color: var(--white);
+  font: inherit;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.image-viewer-close:hover,
+.image-viewer-close:focus-visible {
+  background: var(--white);
+  color: var(--navy);
 }
 
 .notice-detail-ko-title {
