@@ -1,5 +1,10 @@
+import { getStore } from "@edgeone/pages-blob";
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+const AUTH_STORE = "ksam-content";
+const AUTH_KEY = "private/admin-config.json";
+const PASSWORD_ITERATIONS = 150000;
 
 const toBase64Url = (value) => {
   const bytes = value instanceof Uint8Array ? value : encoder.encode(value);
@@ -20,6 +25,33 @@ const sign = async (value, secret) => {
   );
   const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
   return toBase64Url(new Uint8Array(signature));
+};
+
+const randomBase64Url = (length) => {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return toBase64Url(bytes);
+};
+
+const hashPassword = async (password, salt) => {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      hash: "SHA-256",
+      salt: encoder.encode(salt),
+      iterations: PASSWORD_ITERATIONS,
+    },
+    key,
+    256,
+  );
+  return toBase64Url(new Uint8Array(bits));
 };
 
 const constantTimeEqual = (left, right) => {
@@ -54,13 +86,69 @@ export const json = (data, status = 200, extraHeaders = {}) =>
     },
   });
 
-export const hasAdminConfig = (env) =>
-  Boolean(env.ADMIN_USERNAME && env.ADMIN_PASSWORD && env.SESSION_SECRET);
+export const getAdminConfig = async (env = {}) => {
+  if (env.ADMIN_USERNAME && env.ADMIN_PASSWORD && env.SESSION_SECRET) {
+    return {
+      username: env.ADMIN_USERNAME,
+      password: env.ADMIN_PASSWORD,
+      sessionSecret: env.SESSION_SECRET,
+      source: "environment",
+    };
+  }
 
-export const credentialsMatch = (env, username, password) =>
-  hasAdminConfig(env) &&
-  constantTimeEqual(username, env.ADMIN_USERNAME) &&
-  constantTimeEqual(password, env.ADMIN_PASSWORD);
+  const store = getStore({ name: AUTH_STORE, consistency: "strong" });
+  const config = await store.get(AUTH_KEY, { type: "json", consistency: "strong" });
+  if (!config?.username || !config?.passwordHash || !config?.salt || !config?.sessionSecret) {
+    return null;
+  }
+  return { ...config, source: "blob" };
+};
+
+export const hasAdminConfig = async (env) => Boolean(await getAdminConfig(env));
+
+export const createAdminConfig = async (username, password) => {
+  const cleanUsername = String(username || "").trim();
+  const cleanPassword = String(password || "");
+  if (!/^[A-Za-z0-9_.@-]{3,64}$/u.test(cleanUsername)) {
+    throw new Error("아이디는 영문, 숫자, . _ - @ 조합으로 3~64자여야 합니다.");
+  }
+  if (cleanPassword.length < 12 || cleanPassword.length > 200) {
+    throw new Error("비밀번호는 12자 이상 200자 이하로 입력하세요.");
+  }
+
+  const existing = await getAdminConfig({});
+  if (existing) throw new Error("관리자 계정이 이미 등록되어 있습니다.");
+
+  const salt = randomBase64Url(16);
+  const config = {
+    username: cleanUsername,
+    salt,
+    passwordHash: await hashPassword(cleanPassword, salt),
+    sessionSecret: randomBase64Url(32),
+    createdAt: new Date().toISOString(),
+  };
+  const store = getStore({ name: AUTH_STORE, consistency: "strong" });
+  await store.setJSON(AUTH_KEY, config, { onlyIfNew: true });
+
+  const saved = await getAdminConfig({});
+  if (
+    !saved ||
+    !constantTimeEqual(saved.username, cleanUsername) ||
+    !constantTimeEqual(saved.passwordHash, config.passwordHash)
+  ) {
+    throw new Error("관리자 계정을 등록하지 못했습니다. 다시 시도하세요.");
+  }
+  return saved;
+};
+
+export const credentialsMatch = async (config, username, password) => {
+  if (!config || !constantTimeEqual(username, config.username)) return false;
+  if (config.source === "environment") {
+    return constantTimeEqual(password, config.password);
+  }
+  const candidate = await hashPassword(String(password || ""), config.salt);
+  return constantTimeEqual(candidate, config.passwordHash);
+};
 
 export const createSessionToken = async (username, secret) => {
   const payload = toBase64Url(
@@ -73,12 +161,13 @@ export const createSessionToken = async (username, secret) => {
 };
 
 export const getAdminSession = async (request, env) => {
-  if (!hasAdminConfig(env)) return null;
+  const config = await getAdminConfig(env);
+  if (!config) return null;
   const token = getCookie(request, "ksam_admin");
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return null;
 
-  const expectedSignature = await sign(payload, env.SESSION_SECRET);
+  const expectedSignature = await sign(payload, config.sessionSecret);
   if (!constantTimeEqual(signature, expectedSignature)) return null;
 
   try {
@@ -87,7 +176,7 @@ export const getAdminSession = async (request, env) => {
     const bytes = Uint8Array.from(atob(normalized), (character) => character.charCodeAt(0));
     const decoded = JSON.parse(decoder.decode(bytes));
     if (decoded.expires < Date.now()) return null;
-    if (!constantTimeEqual(decoded.username, env.ADMIN_USERNAME)) return null;
+    if (!constantTimeEqual(decoded.username, config.username)) return null;
     return decoded;
   } catch {
     return null;

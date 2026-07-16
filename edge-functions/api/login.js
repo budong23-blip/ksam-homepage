@@ -1,16 +1,15 @@
 import {
   createSessionToken,
   credentialsMatch,
-  hasAdminConfig,
+  getAdminConfig,
   isSameOrigin,
   json,
   sessionCookie,
 } from "../../edge-runtime/auth.js";
 
 export async function onRequestPost({ request, env }) {
-  if (!hasAdminConfig(env)) {
-    return json({ error: "관리자 환경변수 설정이 필요합니다." }, 503);
-  }
+  const config = await getAdminConfig(env);
+  if (!config) return json({ error: "먼저 관리자 계정을 등록하세요." }, 503);
   if (!isSameOrigin(request)) return json({ error: "잘못된 요청입니다." }, 403);
 
   let credentials;
@@ -20,13 +19,13 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "입력 형식이 올바르지 않습니다." }, 400);
   }
 
-  if (!credentialsMatch(env, credentials.username || "", credentials.password || "")) {
+  if (!(await credentialsMatch(config, credentials.username || "", credentials.password || ""))) {
     return json({ error: "아이디 또는 비밀번호가 올바르지 않습니다." }, 401);
   }
 
-  const token = await createSessionToken(env.ADMIN_USERNAME, env.SESSION_SECRET);
+  const token = await createSessionToken(config.username, config.sessionSecret);
   return json(
-    { authenticated: true, username: env.ADMIN_USERNAME },
+    { authenticated: true, username: config.username },
     200,
     { "set-cookie": sessionCookie(token) },
   );

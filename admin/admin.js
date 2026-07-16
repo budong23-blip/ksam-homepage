@@ -1,6 +1,9 @@
 const loginView = document.querySelector("[data-login-view]");
 const loginForm = document.querySelector("[data-login-form]");
 const loginMessage = document.querySelector("[data-login-message]");
+const loginHeading = document.querySelector("[data-login-heading]");
+const loginIntro = document.querySelector("[data-login-intro]");
+const loginSubmit = document.querySelector("[data-login-submit]");
 const workspace = document.querySelector("[data-admin-workspace]");
 const logoutButton = document.querySelector("[data-logout]");
 const saveState = document.querySelector("[data-save-state]");
@@ -17,6 +20,7 @@ const imageInput = document.querySelector("[data-image-input]");
 let notices = [];
 let selectedId = null;
 let dirty = false;
+let loginMode = "login";
 
 const request = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -144,11 +148,30 @@ const loadNotices = async () => {
 };
 
 const showLogin = (message = "") => {
+  loginMode = "login";
   loginView.hidden = false;
   workspace.hidden = true;
   logoutButton.hidden = true;
   loginMessage.textContent = message;
+  loginHeading.textContent = "관리자 로그인";
+  loginIntro.hidden = true;
+  loginSubmit.textContent = "로그인";
+  loginForm.elements.password.autocomplete = "current-password";
   setStatus("관리자 로그인");
+};
+
+const showSetup = () => {
+  loginMode = "setup";
+  loginView.hidden = false;
+  workspace.hidden = true;
+  logoutButton.hidden = true;
+  loginHeading.textContent = "첫 관리자 등록";
+  loginIntro.textContent = "앞으로 사용할 관리자 아이디와 비밀번호를 정하세요. 비밀번호는 12자 이상이어야 합니다.";
+  loginIntro.hidden = false;
+  loginMessage.textContent = "";
+  loginSubmit.textContent = "관리자 등록";
+  loginForm.elements.password.autocomplete = "new-password";
+  setStatus("첫 관리자 등록");
 };
 
 const showWorkspace = async () => {
@@ -166,7 +189,7 @@ loginForm.addEventListener("submit", async (event) => {
 
   try {
     const form = new FormData(loginForm);
-    await request("../api/login", {
+    await request(loginMode === "setup" ? "../api/setup" : "../api/login", {
       method: "POST",
       body: JSON.stringify({
         username: form.get("username"),
@@ -313,7 +336,7 @@ window.addEventListener("beforeunload", (event) => {
 request("../api/session")
   .then((session) => {
     if (!session.configured) {
-      showLogin("EdgeOne 환경변수 설정이 필요합니다.");
+      showSetup();
     } else if (session.authenticated) {
       showWorkspace().catch((error) => showLogin(error.message));
     } else {

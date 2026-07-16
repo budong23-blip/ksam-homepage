@@ -23,7 +23,8 @@
       <section class="login-view" data-login-view>
         <form class="login-panel" data-login-form>
           <img src="../assets/ksam-logo-transparent.png" alt="KSAM" />
-          <h1>관리자 로그인</h1>
+          <h1 data-login-heading>관리자 로그인</h1>
+          <p class="login-intro" data-login-intro hidden></p>
           <label>
             <span>아이디</span>
             <input name="username" autocomplete="username" required />
@@ -33,7 +34,7 @@
             <input name="password" type="password" autocomplete="current-password" required />
           </label>
           <p class="form-message" data-login-message aria-live="polite"></p>
-          <button class="primary-button" type="submit">로그인</button>
+          <button class="primary-button" type="submit" data-login-submit>로그인</button>
         </form>
       </section>
 

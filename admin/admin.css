@@ -48,6 +48,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .login-panel { width: min(420px, 100%); padding: 36px; background: #fff; border-top: 4px solid #1857a4; box-shadow: 0 14px 40px rgba(16, 24, 32, .1); }
 .login-panel img { width: 190px; height: 86px; object-fit: contain; object-position: left center; }
 .login-panel h1 { margin: 18px 0 28px; font-size: 28px; letter-spacing: 0; }
+.login-intro { margin: -14px 0 24px; color: #536273; font-size: 14px; line-height: 1.65; }
 .login-panel label { display: grid; gap: 8px; margin: 0 0 18px; font-weight: 700; font-size: 14px; }
 .login-panel input, .editor-fields input, .editor-fields select {
   width: 100%; min-height: 44px; border: 1px solid #cbd2d9; background: #fff; padding: 0 12px; color: #101820;
