@@ -4,7 +4,6 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const AUTH_STORE = "ksam-content";
 const AUTH_KEY = "private/admin-config.json";
-const PASSWORD_ITERATIONS = 100000;
 
 const toBase64Url = (value) => {
   const bytes = value instanceof Uint8Array ? value : encoder.encode(value);
@@ -15,17 +14,13 @@ const toBase64Url = (value) => {
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/u, "");
 };
 
-const sign = async (value, secret) => {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: { name: "SHA-256" } },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign({ name: "HMAC" }, key, encoder.encode(value));
-  return toBase64Url(new Uint8Array(signature));
+const digestBase64Url = async (value) => {
+  const digest = await crypto.subtle.digest({ name: "SHA-256" }, encoder.encode(value));
+  return toBase64Url(new Uint8Array(digest));
 };
+
+const sign = (value, secret) =>
+  digestBase64Url(JSON.stringify(["ksam-session-v1", secret, value]));
 
 const randomBase64Url = (length) => {
   const bytes = new Uint8Array(length);
@@ -33,26 +28,8 @@ const randomBase64Url = (length) => {
   return toBase64Url(bytes);
 };
 
-const hashPassword = async (password, salt) => {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits"],
-  );
-  const bits = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      hash: { name: "SHA-256" },
-      salt: encoder.encode(salt),
-      iterations: PASSWORD_ITERATIONS,
-    },
-    key,
-    256,
-  );
-  return toBase64Url(new Uint8Array(bits));
-};
+const hashPassword = (password, salt) =>
+  digestBase64Url(JSON.stringify(["ksam-password-v1", salt, password]));
 
 const constantTimeEqual = (left, right) => {
   const leftBytes = encoder.encode(String(left));
@@ -130,6 +107,7 @@ export const createAdminConfig = async (username, password) => {
     username: cleanUsername,
     salt,
     passwordHash,
+    passwordScheme: "sha256-v1",
     sessionSecret: randomBase64Url(32),
     createdAt: new Date().toISOString(),
   };
