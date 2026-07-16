@@ -22,7 +22,12 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const config = await createAdminConfig(input.username, input.password);
-    const token = await createSessionToken(config.username, config.sessionSecret);
+    let token;
+    try {
+      token = await createSessionToken(config.username, config.sessionSecret);
+    } catch (error) {
+      throw new Error(`로그인 세션 생성 실패: ${error?.message || "알 수 없는 오류"}`);
+    }
     return json(
       { authenticated: true, configured: true, username: config.username },
       201,

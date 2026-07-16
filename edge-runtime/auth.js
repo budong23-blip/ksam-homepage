@@ -4,7 +4,7 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const AUTH_STORE = "ksam-content";
 const AUTH_KEY = "private/admin-config.json";
-const PASSWORD_ITERATIONS = 150000;
+const PASSWORD_ITERATIONS = 100000;
 
 const toBase64Url = (value) => {
   const bytes = value instanceof Uint8Array ? value : encoder.encode(value);
@@ -19,11 +19,11 @@ const sign = async (value, secret) => {
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
+    { name: "HMAC", hash: { name: "SHA-256" } },
     false,
     ["sign"],
   );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  const signature = await crypto.subtle.sign({ name: "HMAC" }, key, encoder.encode(value));
   return toBase64Url(new Uint8Array(signature));
 };
 
@@ -37,14 +37,14 @@ const hashPassword = async (password, salt) => {
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(password),
-    "PBKDF2",
+    { name: "PBKDF2" },
     false,
     ["deriveBits"],
   );
   const bits = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
-      hash: "SHA-256",
+      hash: { name: "SHA-256" },
       salt: encoder.encode(salt),
       iterations: PASSWORD_ITERATIONS,
     },
@@ -120,15 +120,25 @@ export const createAdminConfig = async (username, password) => {
   if (existing) throw new Error("관리자 계정이 이미 등록되어 있습니다.");
 
   const salt = randomBase64Url(16);
+  let passwordHash;
+  try {
+    passwordHash = await hashPassword(cleanPassword, salt);
+  } catch (error) {
+    throw new Error(`암호 처리 실패: ${error?.message || "알 수 없는 오류"}`);
+  }
   const config = {
     username: cleanUsername,
     salt,
-    passwordHash: await hashPassword(cleanPassword, salt),
+    passwordHash,
     sessionSecret: randomBase64Url(32),
     createdAt: new Date().toISOString(),
   };
-  const store = getStore({ name: AUTH_STORE, consistency: "strong" });
-  await store.setJSON(AUTH_KEY, config);
+  try {
+    const store = getStore({ name: AUTH_STORE, consistency: "strong" });
+    await store.setJSON(AUTH_KEY, config);
+  } catch (error) {
+    throw new Error(`관리자 정보 저장 실패: ${error?.message || "알 수 없는 오류"}`);
+  }
 
   const saved = await getAdminConfig({});
   if (
