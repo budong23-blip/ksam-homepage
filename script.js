@@ -9,7 +9,47 @@ navToggle?.addEventListener("click", () => {
 nav?.addEventListener("click", (event) => {
   if (event.target instanceof HTMLAnchorElement) {
     nav.classList.remove("is-open");
+    nav.querySelectorAll("[data-nav-dropdown]").forEach((dropdown) => {
+      dropdown.classList.remove("is-open");
+      dropdown
+        .querySelector("[data-submenu-toggle]")
+        ?.setAttribute("aria-expanded", "false");
+    });
   }
+});
+
+const submenuToggles = document.querySelectorAll("[data-submenu-toggle]");
+
+submenuToggles.forEach((toggle) => {
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const dropdown = toggle.closest("[data-nav-dropdown]");
+    const willOpen = !dropdown?.classList.contains("is-open");
+
+    document.querySelectorAll("[data-nav-dropdown]").forEach((item) => {
+      item.classList.remove("is-open");
+      item
+        .querySelector("[data-submenu-toggle]")
+        ?.setAttribute("aria-expanded", "false");
+    });
+
+    if (willOpen && dropdown) {
+      dropdown.classList.add("is-open");
+      toggle.setAttribute("aria-expanded", "true");
+    }
+  });
+});
+
+document.addEventListener("click", (event) => {
+  if (event.target instanceof Element && event.target.closest("[data-nav-dropdown]")) {
+    return;
+  }
+  document.querySelectorAll("[data-nav-dropdown]").forEach((dropdown) => {
+    dropdown.classList.remove("is-open");
+    dropdown
+      .querySelector("[data-submenu-toggle]")
+      ?.setAttribute("aria-expanded", "false");
+  });
 });
 
 const updateHeader = () => {

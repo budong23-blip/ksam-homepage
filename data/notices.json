@@ -1,16 +1,28 @@
 {
   "notices": [
     {
-      "body_ko": "피부 수명의 연장 + 자연스러운 아름다움\nasdfasdfsa\nasdfa\nsdafasf\nasdfasf",
-      "body": "이미지를 클릭하면 축소 확대 가능합니다. \n\n![](/assets/uploads/weixin-image_20260715131324_784_188.jpg)",
-      "title_ko": "한국 의료미용 학술교류회 제4회 정기 학술회의 ",
-      "body_zh": "皮肤\ntest\netasdfasdf\nasdfasdf\nasdfasfd",
-      "published": true,
-      "date": "2026-07-15",
-      "title_zh": "韩国医疗美容",
-      "title": "韩国医疗美容 / 한국 의료미용 학술교류회 제4회 정기 학술회의",
+      "date": "2026-04-23",
+      "type": "Conference",
       "pinned": true,
-      "type": "Conference"
+      "published": true,
+      "title": "2026 KSAM 韩国美容创新大会日程发布 / 2026 KSAM 한국 미용 혁신 컨퍼런스 일정 발표",
+      "body": "## 中文\n\n2026 KSAM韩国美容创新大会日程发布。大会日程、详细分会和参加咨询将通过KSAM秘书处依次公布。\n\n---\n\n## 한국어\n\n대회 일정, 세부 세션, 참가 문의는 KSAM 사무국을 통해 순차 안내됩니다.",
+      "title_zh": "2026 KSAM 韩国美容创新大会日程发布",
+      "body_zh": "2026 KSAM韩国美容创新大会日程发布。大会日程、详细分会和参加咨询将通过KSAM秘书处依次公布。",
+      "title_ko": "2026 KSAM 한국 미용 혁신 컨퍼런스 일정 발표",
+      "body_ko": "대회 일정, 세부 세션, 참가 문의는 KSAM 사무국을 통해 순차 안내됩니다."
+    },
+    {
+      "date": "2026-07-15",
+      "type": "Conference",
+      "pinned": true,
+      "published": true,
+      "title": "韩国医疗美容 / 한국 의료미용 학술교류회 제4회 정기 학술회의",
+      "body": "## 中文\n\n皮肤\n\ntest\n\netasdfasdf\n\nasdfasdf\n\nasdfasfd\n\n---\n\n## 한국어\n\n피부 수명의 연장 + 자연스러운 아름다움\n\nasdfasdfsa\n\nasdfa\n\nsdafasf\n\nasdfasf",
+      "title_zh": "韩国医疗美容",
+      "body_zh": "皮肤\ntest\netasdfasdf\nasdfasdf\nasdfasfd",
+      "title_ko": "한국 의료미용 학술교류회 제4회 정기 학술회의 ",
+      "body_ko": "피부 수명의 연장 + 자연스러운 아름다움\nasdfasdfsa\nasdfa\nsdafasf\nasdfasf"
     }
   ]
 }

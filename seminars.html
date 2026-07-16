@@ -22,10 +22,19 @@
       </button>
 
       <nav class="site-nav" data-nav>
-        <a href="./index.html#about">学会介绍</a>
+        <div class="nav-dropdown" data-nav-dropdown>
+          <a href="./about.html">学会介绍</a>
+          <button class="nav-submenu-toggle" type="button" aria-label="학회소개 하위 메뉴 열기" aria-expanded="false" data-submenu-toggle>⌄</button>
+          <div class="nav-submenu">
+            <a href="./about.html#chair-message">학회장인사말</a>
+            <a href="./about.html#history">연혁</a>
+            <a href="./about.html#organization">조직도</a>
+            <a href="./about.html#executives">임원진소개</a>
+            <a href="./about.html#bylaws">회칙</a>
+          </div>
+        </div>
         <a class="is-active" href="./seminars.html">学术活动</a>
         <a href="./notices.html">最新公告</a>
-        <a href="./index.html#leadership">会长介绍</a>
         <a class="nav-cta" href="./index.html#contact">联系咨询</a>
       </nav>
     </header>
