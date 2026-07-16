@@ -6,7 +6,7 @@ export async function onRequestGet({ request }) {
   if (!key || key.includes("..")) return new Response("Not found", { status: 404 });
 
   const store = getStore("ksam-media");
-  const body = await store.get(key, { type: "arrayBuffer" });
+  const body = await store.get(key, { type: "stream" });
   if (!body) return new Response("Not found", { status: 404 });
 
   const extension = key.split(".").pop()?.toLowerCase();
