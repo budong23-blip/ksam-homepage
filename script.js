@@ -61,21 +61,85 @@ const setupNoticeImageViewer = (container) => {
   viewer.setAttribute("aria-modal", "true");
   viewer.setAttribute("aria-label", "Image viewer");
 
+  const stage = document.createElement("div");
+  stage.className = "image-viewer-stage";
+
   const viewerImage = document.createElement("img");
+  viewerImage.draggable = false;
+
+  const controls = document.createElement("div");
+  controls.className = "image-viewer-controls";
+
+  const createControlButton = (className, label, text) => {
+    const button = document.createElement("button");
+    button.className = className;
+    button.type = "button";
+    button.textContent = text;
+    button.setAttribute("aria-label", label);
+    return button;
+  };
+
+  const zoomOutButton = createControlButton(
+    "image-viewer-zoom-button",
+    "Zoom out",
+    "−",
+  );
+  const resetButton = createControlButton(
+    "image-viewer-zoom-value",
+    "Reset zoom",
+    "100%",
+  );
+  const zoomInButton = createControlButton(
+    "image-viewer-zoom-button",
+    "Zoom in",
+    "+",
+  );
   const closeButton = document.createElement("button");
   closeButton.className = "image-viewer-close";
   closeButton.type = "button";
   closeButton.textContent = "×";
   closeButton.setAttribute("aria-label", "Close image viewer");
-  viewer.append(viewerImage, closeButton);
+
+  stage.append(viewerImage);
+  controls.append(zoomOutButton, resetButton, zoomInButton);
+  viewer.append(stage, controls, closeButton);
   document.body.append(viewer);
 
   let activeImage = null;
+  let scale = 1;
+  let offsetX = 0;
+  let offsetY = 0;
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+
+  const updateTransform = () => {
+    viewerImage.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0) scale(${scale})`;
+    resetButton.textContent = `${Math.round(scale * 100)}%`;
+    viewerImage.classList.toggle("is-draggable", scale > 1);
+  };
+
+  const setZoom = (nextScale) => {
+    scale = Math.min(5, Math.max(0.5, nextScale));
+    if (scale <= 1) {
+      offsetX = 0;
+      offsetY = 0;
+    }
+    updateTransform();
+  };
+
+  const resetZoom = () => {
+    scale = 1;
+    offsetX = 0;
+    offsetY = 0;
+    updateTransform();
+  };
 
   const closeViewer = () => {
     viewer.hidden = true;
     viewerImage.removeAttribute("src");
     document.body.classList.remove("has-image-viewer");
+    resetZoom();
     activeImage?.focus();
     activeImage = null;
   };
@@ -86,6 +150,7 @@ const setupNoticeImageViewer = (container) => {
     viewerImage.alt = image.alt || "";
     viewer.hidden = false;
     document.body.classList.add("has-image-viewer");
+    resetZoom();
     closeButton.focus();
   };
 
@@ -102,12 +167,64 @@ const setupNoticeImageViewer = (container) => {
     });
   });
 
+  zoomOutButton.addEventListener("click", () => setZoom(scale / 1.25));
+  resetButton.addEventListener("click", resetZoom);
+  zoomInButton.addEventListener("click", () => setZoom(scale * 1.25));
   closeButton.addEventListener("click", closeViewer);
-  viewer.addEventListener("click", (event) => {
-    if (event.target === viewer) closeViewer();
+  stage.addEventListener("click", (event) => {
+    if (event.target === stage) closeViewer();
   });
+  stage.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+      setZoom(event.deltaY < 0 ? scale * 1.15 : scale / 1.15);
+    },
+    { passive: false },
+  );
+  viewerImage.addEventListener("pointerdown", (event) => {
+    if (scale <= 1) return;
+    dragging = true;
+    dragStartX = event.clientX - offsetX;
+    dragStartY = event.clientY - offsetY;
+    viewerImage.classList.add("is-dragging");
+    viewerImage.setPointerCapture(event.pointerId);
+  });
+  viewerImage.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    offsetX = event.clientX - dragStartX;
+    offsetY = event.clientY - dragStartY;
+    updateTransform();
+  });
+  const stopDragging = (event) => {
+    if (!dragging) return;
+    dragging = false;
+    viewerImage.classList.remove("is-dragging");
+    if (viewerImage.hasPointerCapture(event.pointerId)) {
+      viewerImage.releasePointerCapture(event.pointerId);
+    }
+  };
+  viewerImage.addEventListener("pointerup", stopDragging);
+  viewerImage.addEventListener("pointercancel", stopDragging);
+  viewerImage.addEventListener("dblclick", resetZoom);
+
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !viewer.hidden) closeViewer();
+    if (viewer.hidden) return;
+
+    if (event.key === "Escape") {
+      closeViewer();
+      return;
+    }
+    if (event.key === "+" || event.key === "=") {
+      event.preventDefault();
+      setZoom(scale * 1.25);
+    } else if (event.key === "-" || event.key === "_") {
+      event.preventDefault();
+      setZoom(scale / 1.25);
+    } else if (event.key === "0") {
+      event.preventDefault();
+      resetZoom();
+    }
   });
 };
 

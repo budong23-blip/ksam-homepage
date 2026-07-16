@@ -1020,22 +1020,84 @@ body.has-image-viewer {
   position: fixed;
   inset: 0;
   z-index: 1000;
+  background: rgba(4, 12, 21, 0.94);
+}
+
+.image-viewer-stage {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  padding: 64px 24px 24px;
-  background: rgba(4, 12, 21, 0.94);
+  overflow: hidden;
+  padding: 72px 24px 88px;
   cursor: zoom-out;
 }
 
-.image-viewer > img {
+.image-viewer-stage > img {
   display: block;
-  max-width: 96vw;
-  max-height: 90vh;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 160px);
   width: auto;
   height: auto;
   object-fit: contain;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
   cursor: default;
+  transform-origin: center;
+  transition: transform 120ms ease-out;
+  user-select: none;
+  touch-action: none;
+  will-change: transform;
+}
+
+.image-viewer-stage > img.is-draggable {
+  cursor: grab;
+}
+
+.image-viewer-stage > img.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.image-viewer-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 46px 76px 46px;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+  background: rgba(4, 12, 21, 0.82);
+  transform: translateX(-50%);
+}
+
+.image-viewer-controls button {
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  font: inherit;
+  cursor: pointer;
+}
+
+.image-viewer-controls button:hover,
+.image-viewer-controls button:focus-visible {
+  background: var(--white);
+  color: var(--navy);
+}
+
+.image-viewer-zoom-button {
+  font-size: 26px !important;
+  line-height: 1;
+}
+
+.image-viewer-zoom-value {
+  font-size: 14px !important;
+  font-weight: 700 !important;
 }
 
 .image-viewer-close {
