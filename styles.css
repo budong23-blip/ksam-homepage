@@ -823,6 +823,14 @@ a {
   overflow-wrap: normal;
 }
 
+.contact-panel .contact-ko-title {
+  margin: 12px 0 26px;
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .contact-panel p {
   color: var(--muted);
 }
