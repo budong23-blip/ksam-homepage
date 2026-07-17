@@ -137,7 +137,8 @@ a {
 }
 
 .nav-submenu a:hover,
-.nav-submenu a:focus-visible {
+.nav-submenu a:focus-visible,
+.nav-submenu a.is-active {
   color: var(--white);
   background: var(--navy);
 }
@@ -847,6 +848,39 @@ a {
 
 .about-detail-page {
   background: var(--white);
+}
+
+.about-index-nav {
+  display: grid;
+  width: min(980px, calc(100% - 40px));
+  margin: 64px auto;
+  border-top: 1px solid var(--line);
+}
+
+.about-index-nav a {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  min-height: 82px;
+  padding: 18px 8px;
+  color: var(--navy);
+  border-bottom: 1px solid var(--line);
+}
+
+.about-index-nav a:hover,
+.about-index-nav a:focus-visible {
+  color: var(--gold);
+}
+
+.about-index-nav span {
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.about-index-nav strong {
+  font-size: 24px;
 }
 
 .about-detail-section {
