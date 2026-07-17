@@ -69,7 +69,7 @@ if (conferencePopup instanceof HTMLDialogElement) {
     const day = String(now.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   })();
-  const popupStorageKey = "ksam-conference-popup-hidden-date";
+  const popupStorageKey = "ksam-conference-2026-08-19-hidden-date";
   let hiddenDate = "";
 
   try {
