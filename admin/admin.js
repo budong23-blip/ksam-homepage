@@ -101,6 +101,47 @@ const bodyToHtml = (body) => {
   return window.DOMPurify.sanitize(window.marked.parse(source, { breaks: true, gfm: true }));
 };
 
+const mediaCacheVersion = "20260717-2";
+
+const refreshMediaUrls = (container) => {
+  container.querySelectorAll('img[src^="/api/media-file/"]').forEach((image) => {
+    const url = new URL(image.getAttribute("src"), window.location.origin);
+    url.searchParams.set("v", mediaCacheVersion);
+    image.src = `${url.pathname}${url.search}`;
+  });
+};
+
+const waitForUploadedImage = async (publicUrl) => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const url = new URL(publicUrl, window.location.origin);
+    url.searchParams.set("v", `${Date.now()}-${attempt}`);
+
+    try {
+      const response = await fetch(url, { cache: "no-store" });
+      if (response.ok) {
+        const blobUrl = URL.createObjectURL(await response.blob());
+        try {
+          await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = resolve;
+            image.onerror = reject;
+            image.src = blobUrl;
+          });
+          return `${url.pathname}${url.search}`;
+        } finally {
+          URL.revokeObjectURL(blobUrl);
+        }
+      }
+    } catch {
+      // Blob replication can take a moment immediately after upload.
+    }
+
+    await new Promise((resolve) => window.setTimeout(resolve, 1000));
+  }
+
+  throw new Error("사진 저장 확인에 실패했습니다. 잠시 후 다시 올려 주세요.");
+};
+
 const fillEditor = (notice) => {
   selectedId = notice?.id || null;
   editorForm.hidden = !notice;
@@ -115,6 +156,7 @@ const fillEditor = (notice) => {
     notice.body ||
       [notice.body_zh, notice.body_ko].filter(Boolean).join("\n\n---\n\n"),
   );
+  refreshMediaUrls(richEditor);
   editorHeading.textContent = getTitle(notice);
   previewLink.href = detailUrl(notice);
   dirty = false;
@@ -322,8 +364,9 @@ imageInput.addEventListener("change", async () => {
       body: file,
     });
     if (!response.ok) throw new Error("사진 업로드에 실패했습니다.");
+    const verifiedUrl = await waitForUploadedImage(upload.publicUrl);
     richEditor.focus();
-    document.execCommand("insertImage", false, upload.publicUrl);
+    document.execCommand("insertImage", false, verifiedUrl);
     setDirty();
   } catch (error) {
     setStatus(error.message, "error");

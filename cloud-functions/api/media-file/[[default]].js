@@ -21,7 +21,9 @@ export async function onRequestGet({ request }) {
   return new Response(body, {
     headers: {
       "content-type": contentTypes[extension] || "application/octet-stream",
-      "cache-control": "public, max-age=31536000, immutable",
+      "cache-control": "no-store, no-cache, max-age=0, must-revalidate",
+      pragma: "no-cache",
+      expires: "0",
       "x-content-type-options": "nosniff",
     },
   });

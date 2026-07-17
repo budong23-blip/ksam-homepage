@@ -133,6 +133,16 @@ const getNoticeDetailUrl = (notice) => {
   return `./notice-detail.html?${detailParams.toString()}`;
 };
 
+const mediaCacheVersion = "20260717-2";
+
+const refreshNoticeImageUrls = (container) => {
+  container.querySelectorAll('img[src^="/api/media-file/"]').forEach((image) => {
+    const url = new URL(image.getAttribute("src"), window.location.origin);
+    url.searchParams.set("v", mediaCacheVersion);
+    image.src = `${url.pathname}${url.search}`;
+  });
+};
+
 const setupNoticeImageViewer = (container) => {
   const images = container.querySelectorAll("img");
   if (images.length === 0) return;
@@ -455,6 +465,7 @@ const renderNoticeDetail = (notices) => {
         gfm: true,
       });
       richContent.innerHTML = window.DOMPurify.sanitize(renderedBody);
+      refreshNoticeImageUrls(richContent);
     } else {
       richContent.textContent = selectedNotice.body;
     }
