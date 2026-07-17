@@ -203,6 +203,9 @@ const setupNoticeImageViewer = (container) => {
   let scale = 1;
   let offsetX = 0;
   let offsetY = 0;
+  let fittedWidth = 0;
+  let fittedHeight = 0;
+  let maxScale = 5;
   let dragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
@@ -224,13 +227,49 @@ const setupNoticeImageViewer = (container) => {
   });
 
   const updateTransform = () => {
-    viewerImage.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0) scale(${scale})`;
+    if (fittedWidth > 0 && fittedHeight > 0) {
+      viewerImage.style.width = `${fittedWidth * scale}px`;
+      viewerImage.style.height = `${fittedHeight * scale}px`;
+      viewerImage.classList.add("is-render-sized");
+    }
+    viewerImage.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
     resetButton.textContent = `${Math.round(scale * 100)}%`;
     viewerImage.classList.toggle("is-draggable", scale > 1);
   };
 
+  const fitImageToStage = () => {
+    if (!viewerImage.naturalWidth || !viewerImage.naturalHeight) return;
+
+    const stageStyle = window.getComputedStyle(stage);
+    const availableWidth =
+      stage.clientWidth -
+      Number.parseFloat(stageStyle.paddingLeft) -
+      Number.parseFloat(stageStyle.paddingRight);
+    const availableHeight =
+      stage.clientHeight -
+      Number.parseFloat(stageStyle.paddingTop) -
+      Number.parseFloat(stageStyle.paddingBottom);
+    const fitRatio = Math.min(
+      availableWidth / viewerImage.naturalWidth,
+      availableHeight / viewerImage.naturalHeight,
+      1,
+    );
+
+    fittedWidth = Math.max(1, viewerImage.naturalWidth * fitRatio);
+    fittedHeight = Math.max(1, viewerImage.naturalHeight * fitRatio);
+    maxScale = Math.max(
+      5,
+      Math.min(
+        20,
+        viewerImage.naturalWidth /
+          (fittedWidth * Math.min(window.devicePixelRatio || 1, 3)),
+      ),
+    );
+    updateTransform();
+  };
+
   const setZoom = (nextScale) => {
-    scale = Math.min(5, Math.max(0.5, nextScale));
+    scale = Math.min(maxScale, Math.max(0.5, nextScale));
     if (scale <= 1) {
       offsetX = 0;
       offsetY = 0;
@@ -248,10 +287,16 @@ const setupNoticeImageViewer = (container) => {
   const closeViewer = () => {
     viewer.hidden = true;
     viewerImage.removeAttribute("src");
+    viewerImage.style.removeProperty("width");
+    viewerImage.style.removeProperty("height");
+    viewerImage.style.removeProperty("transform");
     document.body.classList.remove("has-image-viewer");
     activePointers.clear();
     dragging = false;
-    viewerImage.classList.remove("is-dragging", "is-gesturing");
+    fittedWidth = 0;
+    fittedHeight = 0;
+    maxScale = 5;
+    viewerImage.classList.remove("is-dragging", "is-gesturing", "is-render-sized");
     resetZoom();
     activeImage?.focus();
     activeImage = null;
@@ -264,8 +309,11 @@ const setupNoticeImageViewer = (container) => {
     viewer.hidden = false;
     document.body.classList.add("has-image-viewer");
     resetZoom();
+    if (viewerImage.complete) fitImageToStage();
     closeButton.focus();
   };
+
+  viewerImage.addEventListener("load", fitImageToStage);
 
   images.forEach((image) => {
     image.tabIndex = 0;
@@ -340,7 +388,7 @@ const setupNoticeImageViewer = (container) => {
       const pair = getPointerPair();
       const center = getPointerCenter(pair);
       const nextScale = Math.min(
-        5,
+        maxScale,
         Math.max(0.5, pinchStartScale * (getPointerDistance(pair) / pinchStartDistance)),
       );
 
@@ -394,6 +442,11 @@ const setupNoticeImageViewer = (container) => {
   stage.addEventListener("pointerup", stopPointerGesture);
   stage.addEventListener("pointercancel", stopPointerGesture);
   viewerImage.addEventListener("dblclick", resetZoom);
+  window.addEventListener("resize", () => {
+    if (viewer.hidden) return;
+    resetZoom();
+    fitImageToStage();
+  });
 
   document.addEventListener("keydown", (event) => {
     if (viewer.hidden) return;

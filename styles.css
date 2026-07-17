@@ -1400,6 +1400,11 @@ body.has-image-viewer {
   will-change: transform;
 }
 
+.image-viewer-stage > img.is-render-sized {
+  max-width: none;
+  max-height: none;
+}
+
 .image-viewer-stage > img.is-draggable {
   cursor: grab;
 }
