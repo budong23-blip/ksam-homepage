@@ -206,6 +206,22 @@ const setupNoticeImageViewer = (container) => {
   let dragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
+  const activePointers = new Map();
+  let pinchStartDistance = 0;
+  let pinchStartScale = 1;
+  let pinchStartCenterX = 0;
+  let pinchStartCenterY = 0;
+  let pinchStartOffsetX = 0;
+  let pinchStartOffsetY = 0;
+  let ignoreStageClickUntil = 0;
+
+  const getPointerPair = () => [...activePointers.values()].slice(0, 2);
+  const getPointerDistance = ([first, second]) =>
+    Math.hypot(second.x - first.x, second.y - first.y);
+  const getPointerCenter = ([first, second]) => ({
+    x: (first.x + second.x) / 2,
+    y: (first.y + second.y) / 2,
+  });
 
   const updateTransform = () => {
     viewerImage.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0) scale(${scale})`;
@@ -233,6 +249,9 @@ const setupNoticeImageViewer = (container) => {
     viewer.hidden = true;
     viewerImage.removeAttribute("src");
     document.body.classList.remove("has-image-viewer");
+    activePointers.clear();
+    dragging = false;
+    viewerImage.classList.remove("is-dragging", "is-gesturing");
     resetZoom();
     activeImage?.focus();
     activeImage = null;
@@ -266,6 +285,7 @@ const setupNoticeImageViewer = (container) => {
   zoomInButton.addEventListener("click", () => setZoom(scale * 1.25));
   closeButton.addEventListener("click", closeViewer);
   stage.addEventListener("click", (event) => {
+    if (Date.now() < ignoreStageClickUntil) return;
     if (event.target === stage) closeViewer();
   });
   stage.addEventListener(
@@ -276,30 +296,103 @@ const setupNoticeImageViewer = (container) => {
     },
     { passive: false },
   );
-  viewerImage.addEventListener("pointerdown", (event) => {
-    if (scale <= 1) return;
-    dragging = true;
-    dragStartX = event.clientX - offsetX;
-    dragStartY = event.clientY - offsetY;
-    viewerImage.classList.add("is-dragging");
-    viewerImage.setPointerCapture(event.pointerId);
+  stage.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (event.pointerType !== "mouse" || scale > 1) event.preventDefault();
+
+    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    try {
+      stage.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is optional on older mobile browsers.
+    }
+
+    if (activePointers.size >= 2) {
+      const pair = getPointerPair();
+      const center = getPointerCenter(pair);
+      pinchStartDistance = Math.max(1, getPointerDistance(pair));
+      pinchStartScale = scale;
+      pinchStartCenterX = center.x;
+      pinchStartCenterY = center.y;
+      pinchStartOffsetX = offsetX;
+      pinchStartOffsetY = offsetY;
+      dragging = false;
+      viewerImage.classList.remove("is-dragging");
+      viewerImage.classList.add("is-gesturing");
+      ignoreStageClickUntil = Date.now() + 350;
+      return;
+    }
+
+    if (scale > 1) {
+      dragging = true;
+      dragStartX = event.clientX - offsetX;
+      dragStartY = event.clientY - offsetY;
+      viewerImage.classList.add("is-dragging");
+    }
   });
-  viewerImage.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
+
+  stage.addEventListener("pointermove", (event) => {
+    if (!activePointers.has(event.pointerId)) return;
+    activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (activePointers.size >= 2) {
+      event.preventDefault();
+      const pair = getPointerPair();
+      const center = getPointerCenter(pair);
+      const nextScale = Math.min(
+        5,
+        Math.max(0.5, pinchStartScale * (getPointerDistance(pair) / pinchStartDistance)),
+      );
+
+      scale = nextScale;
+      if (scale <= 1) {
+        offsetX = 0;
+        offsetY = 0;
+      } else {
+        offsetX = pinchStartOffsetX + center.x - pinchStartCenterX;
+        offsetY = pinchStartOffsetY + center.y - pinchStartCenterY;
+      }
+      ignoreStageClickUntil = Date.now() + 350;
+      updateTransform();
+      return;
+    }
+
+    if (!dragging || scale <= 1) return;
+    event.preventDefault();
     offsetX = event.clientX - dragStartX;
     offsetY = event.clientY - dragStartY;
+    ignoreStageClickUntil = Date.now() + 350;
     updateTransform();
   });
-  const stopDragging = (event) => {
-    if (!dragging) return;
-    dragging = false;
-    viewerImage.classList.remove("is-dragging");
-    if (viewerImage.hasPointerCapture(event.pointerId)) {
-      viewerImage.releasePointerCapture(event.pointerId);
+
+  const stopPointerGesture = (event) => {
+    const wasPinching = activePointers.size >= 2;
+    activePointers.delete(event.pointerId);
+    try {
+      if (stage.hasPointerCapture(event.pointerId)) {
+        stage.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // The pointer may already have been released by the browser.
     }
+
+    viewerImage.classList.toggle("is-gesturing", activePointers.size >= 2);
+    const remainingPointer = activePointers.values().next().value;
+    if (remainingPointer && scale > 1) {
+      dragging = true;
+      dragStartX = remainingPointer.x - offsetX;
+      dragStartY = remainingPointer.y - offsetY;
+      viewerImage.classList.add("is-dragging");
+    } else {
+      dragging = false;
+      viewerImage.classList.remove("is-dragging");
+    }
+
+    if (wasPinching) ignoreStageClickUntil = Date.now() + 350;
   };
-  viewerImage.addEventListener("pointerup", stopDragging);
-  viewerImage.addEventListener("pointercancel", stopDragging);
+
+  stage.addEventListener("pointerup", stopPointerGesture);
+  stage.addEventListener("pointercancel", stopPointerGesture);
   viewerImage.addEventListener("dblclick", resetZoom);
 
   document.addEventListener("keydown", (event) => {

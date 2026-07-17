@@ -1381,6 +1381,7 @@ body.has-image-viewer {
   overflow: hidden;
   padding: 72px 24px 88px;
   cursor: zoom-out;
+  touch-action: none;
 }
 
 .image-viewer-stage > img {
@@ -1405,6 +1406,10 @@ body.has-image-viewer {
 
 .image-viewer-stage > img.is-dragging {
   cursor: grabbing;
+  transition: none;
+}
+
+.image-viewer-stage > img.is-gesturing {
   transition: none;
 }
 
