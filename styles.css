@@ -231,6 +231,10 @@ a {
   text-transform: uppercase;
 }
 
+.hero-content > .eyebrow {
+  margin-left: clamp(8px, 1vw, 14px);
+}
+
 .hero h1 {
   max-width: 900px;
   margin: 0;
