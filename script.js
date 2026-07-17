@@ -129,6 +129,7 @@ const getNoticeDetailUrl = (notice) => {
   const detailParams = new URLSearchParams({
     date: String(notice.date),
     title: getNoticeTitle(notice),
+    v: "20260717-3",
   });
   return `./notice-detail.html?${detailParams.toString()}`;
 };

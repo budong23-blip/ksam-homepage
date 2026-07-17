@@ -52,7 +52,11 @@ const selectedNotice = () => notices.find((notice) => notice.id === selectedId);
 const getTitle = (notice) => notice.title || "제목 없는 공지";
 
 const detailUrl = (notice) => {
-  const params = new URLSearchParams({ date: notice.date, title: getTitle(notice) });
+  const params = new URLSearchParams({
+    date: notice.date,
+    title: getTitle(notice),
+    v: "20260717-3",
+  });
   return `../notice-detail.html?${params.toString()}`;
 };
 
