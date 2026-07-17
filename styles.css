@@ -67,14 +67,35 @@ a {
   gap: 8px;
 }
 
-.site-nav a,
+.site-nav > a,
 .nav-parent-label {
-  padding: 10px 12px;
+  display: grid;
+  min-width: 88px;
+  min-height: 52px;
+  padding: 7px 12px;
+  place-content: center;
+  gap: 3px;
   color: #263847;
-  font-size: 14px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.15;
   text-align: center;
+}
+
+.nav-label-cn,
+.nav-label-ko {
+  display: block;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.nav-label-cn {
+  font-size: 14px;
+}
+
+.nav-label-ko {
+  color: #6b7985;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .nav-parent-label {
@@ -85,6 +106,15 @@ a {
 }
 
 .site-nav a:hover {
+  color: var(--blue);
+}
+
+.site-nav > a:hover .nav-label-ko,
+.site-nav > a:focus-visible .nav-label-ko,
+.nav-parent-label:hover .nav-label-ko,
+.nav-parent-label:focus-visible .nav-label-ko,
+.site-nav > a.is-active .nav-label-ko,
+.nav-parent-label.is-active .nav-label-ko {
   color: var(--blue);
 }
 
@@ -142,6 +172,9 @@ a {
   padding: 11px 14px;
   border-bottom: 1px solid var(--line);
   color: var(--navy);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
   text-align: left;
   white-space: nowrap;
 }
@@ -166,9 +199,14 @@ a {
 }
 
 .nav-cta {
+  min-width: 96px !important;
   color: var(--white) !important;
   background: var(--navy);
   border: 1px solid var(--navy);
+}
+
+.nav-cta .nav-label-ko {
+  color: rgba(255, 255, 255, 0.76);
 }
 
 .nav-toggle {
@@ -1550,24 +1588,31 @@ body.has-image-viewer {
   }
 
   .nav-dropdown > a,
+  .site-nav > a,
   .nav-parent-label {
     width: 100%;
+    min-height: 50px;
+    justify-content: start;
+    justify-items: start;
     text-align: left;
   }
 
   .nav-parent-label {
+    position: relative;
     cursor: pointer;
   }
 
   .nav-parent-label::after {
     content: "⌄";
-    display: inline-block;
-    float: right;
+    position: absolute;
+    top: 50%;
+    right: 12px;
     font-size: 20px;
+    transform: translateY(-50%);
   }
 
   .nav-parent-label[aria-expanded="true"]::after {
-    transform: rotate(180deg);
+    transform: translateY(-50%) rotate(180deg);
   }
 
   .nav-submenu-toggle {
